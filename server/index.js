@@ -1,20 +1,40 @@
-import express from 'express';
-import bodyParser from 'body-parser'
-import mongoose from 'mongoose'
-import cors from 'cors' 
-import postRoutes from './routes/post.js'
+import express from "express";
+import bodyParser from "body-parser";
+import mongoose from "mongoose";
+import cors from "cors";
+import postRoutes from "./routes/post.js";
+import { MongoClient } from "mongodb";
 
 const app = express();
-app.use('/posts',postRoutes);
 
-app.use(bodyParser.json({limit: "30mb", extended: true}));
-app.use(bodyParser.urlencoded({limit: "30mb", extended: true}));
-app.use(cors());
+// Middlewares
+app.use(express.json());
+app.use(bodyParser.json({ limit: "30mb", extended: true }));
+app.use(bodyParser.urlencoded({ limit: "50mb", extended: true, parameterLimit: 50000 }))
+app.use(cors('http://localhost:3000'));
 
-// cloud atlas mongodb  
-const CONNECTION_URL = "mongodb+srv://mehsaandev:mehsaandev1231231213@cluster0.btui8.mongodb.net/?retryWrites=true&w=majority";
-const PORT = process.env.PORT || 5000;
-mongoose.connect(CONNECTION_URL,{useNewUrlParser: true, useUnifiedTopology: true})
-.then(()=>app.listen(PORT, ()=>console.log(`server running on port: ${PORT}`)))
-.catch(()=>(err)=>console.log(err.messsage));
+app.use(function (req, res, next) {
+  //Enabling CORS
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, x-client-key, x-client-token, x-client-secret, Authorization");
+    next();
+  });
+app.use("/posts", postRoutes);
+
+// cloud atlas mongodbs
+const CONNECTION_URL =
+  "mongodb+srv://mehsaandev:RpoyIXB4ZwXoJ8Hv@cluster0.btui8.mongodb.net/test?retryWrites=true&w=majority";
+
+const PORT = 8080;
+
+mongoose
+  .connect(CONNECTION_URL, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then((result) =>
+    app.listen(PORT, () => console.log(`Server Running on Port: ${PORT}`))
+  )
+  .catch(() => (err) => console.log(err.messsage));
 
